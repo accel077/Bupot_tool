@@ -32,13 +32,13 @@ def extract_info(pdf_file):
                                     break
                         if nomor_bupot: break
 
-                # 3. Ambil Nomor Dokumen (B.9)
-                 if "Nomor Dokumen" in line:
-                    # Mencari tanda ':' dan mengambil semua karakter setelahnya
+                # 3. REVISI: Ambil Nomor Dokumen (B.9) - Mengambil semua karakter
+                if "Nomor Dokumen" in line:
+                    # Mengambil teks setelah tanda titik dua (:) 
                     if ":" in line:
                         nomor_dokumen = line.split(":", 1)[1].strip()
                     else:
-                        # Fallback jika formatnya sedikit berbeda
+                        # Fallback jika tidak ada titik dua
                         nomor_dokumen = line.replace("Nomor Dokumen", "").strip()
             
             return nama, nomor_bupot, nomor_dokumen
@@ -68,8 +68,9 @@ if uploaded_files:
         nama, bupot, dok = extract_info(file)
         
         if nama and bupot and dok:
+            # Membersihkan karakter ilegal untuk nama file (terutama jika No Dokumen ada "/")
             new_filename = f"{nama} {bupot} {dok}.pdf"
-            new_filename = re.sub(r'[\\/*?:"<>|]', "", new_filename)
+            new_filename = re.sub(r'[\\/*?:"<>|]', "_", new_filename) # Ubah karakter terlarang jadi underscore
             status = "✅ Berhasil"
         else:
             new_filename = f"GAGAL_BACA_{file.name}"
@@ -121,7 +122,6 @@ if uploaded_files:
     # 2. Download Excel (Rekap Data)
     with col2:
         excel_buffer = io.BytesIO()
-        # Menggunakan engine xlsxwriter (pastikan sudah install: pip install xlsxwriter)
         with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
             df.to_excel(writer, index=False, sheet_name='Data_Bupot')
         
@@ -142,8 +142,6 @@ if uploaded_files:
 with st.sidebar:
     st.header("Info Program")
     st.info("""
-    - **Rename Otomatis**: Nama file diubah berdasarkan data identitas di dalam PDF.
-    - **Ekspor Excel**: Data Nama, Nomor Bupot, dan Dokumen langsung dirangkum dalam satu tabel.
-    - **Privasi**: File hanya diproses sementara dan tidak disimpan di server.
-
+    - **Rename Otomatis**: Mengambil Nama, No Bupot, dan No Dokumen.
+    - **Karakter Aman**: Simbol seperti `/` pada nomor dokumen akan otomatis diubah menjadi `_` agar file bisa disimpan.
     """)

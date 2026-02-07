@@ -33,10 +33,13 @@ def extract_info(pdf_file):
                         if nomor_bupot: break
 
                 # 3. Ambil Nomor Dokumen (B.9)
-                if "Nomor Dokumen" in line:
-                    match = re.search(r':\s*(\d+)', line)
-                    if match:
-                        nomor_dokumen = match.group(1).strip()
+                 if "Nomor Dokumen" in line:
+                    # Mencari tanda ':' dan mengambil semua karakter setelahnya
+                    if ":" in line:
+                        nomor_dokumen = line.split(":", 1)[1].strip()
+                    else:
+                        # Fallback jika formatnya sedikit berbeda
+                        nomor_dokumen = line.replace("Nomor Dokumen", "").strip()
             
             return nama, nomor_bupot, nomor_dokumen
     except Exception:
@@ -142,4 +145,5 @@ with st.sidebar:
     - **Rename Otomatis**: Nama file diubah berdasarkan data identitas di dalam PDF.
     - **Ekspor Excel**: Data Nama, Nomor Bupot, dan Dokumen langsung dirangkum dalam satu tabel.
     - **Privasi**: File hanya diproses sementara dan tidak disimpan di server.
+
     """)
